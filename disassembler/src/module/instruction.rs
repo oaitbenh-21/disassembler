@@ -35,7 +35,7 @@ impl<'a> InstructionValues<'a> {
                             let value = instructions_slice
                                 .get(decoded_byte_count as usize..decoded_byte_count as usize + 2)
                                 .unwrap();
-                            print!(" %{}", read_i16_be(value, &mut 0).unwrap());
+                            print!(" {}", read_i16_be(value, &mut 0).unwrap());
                             decoded_byte_count += 2;
                         }
                         0b10 => {
@@ -47,7 +47,7 @@ impl<'a> InstructionValues<'a> {
                                             ..decoded_byte_count as usize + 2,
                                     )
                                     .unwrap();
-                                print!(" {:?}", read_i16_be(value, &mut 0).unwrap());
+                                print!(" %{:?}", read_i16_be(value, &mut 0).unwrap());
                                 decoded_byte_count += 2;
                             } else {
                                 let value = instructions_slice
@@ -56,7 +56,7 @@ impl<'a> InstructionValues<'a> {
                                             ..decoded_byte_count as usize + 4,
                                     )
                                     .unwrap();
-                                print!(" {:?}", read_i32_be(value, &mut 0).unwrap());
+                                print!(" %{:?}", read_i32_be(value, &mut 0).unwrap());
                                 decoded_byte_count += 4;
                             };
                         }
@@ -68,7 +68,7 @@ impl<'a> InstructionValues<'a> {
                             decoded_byte_count += 1;
                         }
                         _ => {
-                            println!("\npcode doesn't match anything");
+                            println!("\nWarning: pcode doesn't match anything");
                         }
                     }
                 }
@@ -76,6 +76,10 @@ impl<'a> InstructionValues<'a> {
                 // println!("pcode: {:b}", current_instruction_values.pcode);
             } else {
                 for params_arr in current_instruction_data.params {
+                    if params_arr.len() != 1 {
+                        println!("error in player.s:{}", decoded_byte_count);
+                        return;
+                    }
                     if matches!(params_arr[0], ParamType::Direct) {
                         if current_instruction_data.has_idx {
                             let value = instructions_slice
@@ -90,6 +94,17 @@ impl<'a> InstructionValues<'a> {
                             println!(" %{:?}", read_i32_be(value, &mut 0).unwrap());
                             decoded_byte_count += 4;
                         };
+                    } else if matches!(params_arr[0], ParamType::Indirect) {
+                        let value = instructions_slice
+                                .get(decoded_byte_count as usize..decoded_byte_count as usize + 2)
+                                .unwrap();
+                            print!(" {}", read_i16_be(value, &mut 0).unwrap());
+                            decoded_byte_count += 2;
+                    } else if matches!(params_arr[0], ParamType::Register) {
+                        let value =
+                                instructions_slice.get(decoded_byte_count as usize).unwrap();
+                            print!(" r{}", value);
+                            decoded_byte_count += 1;
                     }
                 }
             }
