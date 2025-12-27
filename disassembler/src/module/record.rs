@@ -23,15 +23,26 @@ impl BinaryRecord {
             code: config.program_instructions, //config.program_instructions,
         };
     }
-    pub fn run_disassembler(file_path: String) {
+    pub fn run_disassembler(file_path: String) -> String {
         let mut file_open = File::open(file_path).unwrap();
         let config: BinaryConfig = BinaryConfig::intialize_config(&mut file_open);
+        if config.magic_code != [0x00, 0xea, 0x83, 0xf3] {
+            panic!("Invalid magic code. Not a valid core file.");
+        }
         let record: BinaryRecord = BinaryRecord::new(config);
-        record.decode_instructions();
+        return record.decode_instructions();
     }
-    pub fn decode_instructions(self) {
-        println!(".name \"{}\"", self.program_name);
-        println!(".description \"{}\"", self.program_description);
-        InstructionValues::get_instruction_data(self.code, &self.code_size);
+    pub fn decode_instructions(self) -> String {
+        let mut result: String = String::new();
+        result.push_str(&format!(".name \"{}\"\n", self.program_name));
+        result.push_str(&format!(".description \"{}\"", self.program_description));
+        if self.code_size != self.code.len() as u32 {
+            panic!("Mismatch in code size and actual instructions length.");
+        } else if self.code_size == 0 {
+            panic!("No instructions to decode.");
+        }
+        result
+            .push_str(InstructionValues::get_instruction_data(self.code, &self.code_size).as_str());
+        return result;
     }
 }
