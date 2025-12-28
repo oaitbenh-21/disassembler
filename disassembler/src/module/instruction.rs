@@ -80,7 +80,9 @@ impl<'a> InstructionValues<'a> {
                             );
                         }
                     }
+                    result.push_str(&format!(","));
                 }
+                result.pop();
                 result.push_str(&format!("\n"));
                 // println!("pcode: {:b}", current_instruction_values.pcode);
             } else {
@@ -118,9 +120,13 @@ impl<'a> InstructionValues<'a> {
                         result.push_str(&format!(" r{}", value));
                         decoded_byte_count += 1;
                     }
+                    result.push_str(&format!(","));
                 }
+                result.pop();
+                result.push_str(&format!("\n"));
             }
         }
+        result.pop();
         return result;
     }
 }

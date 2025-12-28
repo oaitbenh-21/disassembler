@@ -6,9 +6,8 @@ use std::{
     path::Path,
 };
 
-use crate::arithmetic;
-
 use super::{
+    arithmetic::extract_number_and_calculate,
     instruction::{InstructionInstance, Param, ValueType},
     lexer::{Token, tokenize},
 };
@@ -51,9 +50,24 @@ pub fn parse_file(path: &Path) -> Result<Player, String> {
     let mut macros_map: HashMap<String, AssemblyMacro> = HashMap::new();
     // preprocessing loop
     for (line_num, line) in reader.lines().enumerate() {
-        let line = line.map_err(|e| format!("error reading for the buffer: {e}"))?;
-        let line_trimmed = line.trim();
-        arithmetic::extract_number_operations(&line.as_str());
+        let mut line = line.map_err(|e| format!("error reading for the buffer: {e}"))?;
+        let mut line_trimmed = line.trim().to_string();
+        let operations = extract_number_and_calculate(&line.as_str());
+        match operations {
+            Ok(val) => {
+                let (to, from) = val;
+                let len = from.len().min(to.len());
+
+                for i in 0..len {
+                    line = line.replace(&from[i], &to[i]);
+                    line_trimmed = line_trimmed.replace(&from[i], &to[i]);
+                }
+            }
+            Err(error) => {
+                return Err(format!("Error on line {}: {}", line_num + 1, error));
+            }
+        };
+
         if line_trimmed.is_empty() || line_trimmed.starts_with(';') || line_trimmed.starts_with("#")
         {
             continue;

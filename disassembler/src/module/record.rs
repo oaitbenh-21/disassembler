@@ -23,8 +23,14 @@ impl BinaryRecord {
             code: config.program_instructions, //config.program_instructions,
         };
     }
+
     pub fn run_disassembler(file_path: String) -> String {
-        let mut file_open = File::open(file_path).unwrap();
+        let mut file_open = match File::open(file_path) {
+            Ok(file) => file,
+            Err(err) => {
+                panic!("{:?}", err);
+            }
+        };
         let config: BinaryConfig = BinaryConfig::intialize_config(&mut file_open);
         if config.magic_code != [0x00, 0xea, 0x83, 0xf3] {
             panic!("Invalid magic code. Not a valid core file.");
@@ -35,7 +41,7 @@ impl BinaryRecord {
     pub fn decode_instructions(self) -> String {
         let mut result: String = String::new();
         result.push_str(&format!(".name \"{}\"\n", self.program_name));
-        result.push_str(&format!(".description \"{}\"", self.program_description));
+        result.push_str(&format!(".description \"{}\"\n", self.program_description));
         if self.code_size != self.code.len() as u32 {
             panic!("Mismatch in code size and actual instructions length.");
         } else if self.code_size == 0 {

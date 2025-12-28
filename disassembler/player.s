@@ -1,5 +1,3 @@
-.name "dwarf"
-.description "bomber that kills ameba"
 sti r1, %:live, %1
 and r1, %0, r1
 live %1
@@ -9,9 +7,7 @@ fork %:live
 sti r1, %:bomb, r2
 add r2, r3, r2
 zjmp %:bomb
-
-        .name "dwarf"
-.description "bomber that kills ameba"
+_____________________________
 sti r1 %15 %1
 and r1 %0 r1
 live %1
