@@ -28,6 +28,6 @@ fn main() {
     println!("\t\tcargo run [filePath.cor]");
     println!("Example:\n\t\t./disassembler ../players/bin/player.cor");
     println!(
-        "Help:\n\t\tIf you need to write that in a file, learn how humans use the Linux shell"
+        "Help:\n\t\tIf you need to write that in a file, learn how humans use the Linux shell\n\ttuse --hint to help you."
     );
 }
