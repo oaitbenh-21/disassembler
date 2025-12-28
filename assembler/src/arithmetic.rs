@@ -55,7 +55,7 @@ pub fn extract_number_and_calculate(input: &str) -> Result<(Vec<String>, Vec<Str
                     }
                 } else if "+-*/".contains(c) && !num1.is_empty() && operator.is_none() {
                     operator = Some(c);
-                } else if !c.is_whitespace() {
+                } else {
                     break;
                 }
 
