@@ -1,9 +1,6 @@
-.name "brahem"
-.comment "the ultimate warrior"
+.name "name_0"
+.description "description_0"
     live %1
-.macro ldstore
-    ld %34, r2
-    st r2, 45
+.macro .usemacro
+live %1
 .endmacro
-    live %1
-.usemacro ldstore

@@ -56,7 +56,7 @@ pub fn parse_file(path: &Path) -> Result<Player, String> {
             continue;
         }
         // basic macro system
-        if line_trimmed.starts_with(".macro") {
+        if line_trimmed.starts_with(".macro ") {
             let splited_macro_definer = line_trimmed.split(" ").collect::<Vec<&str>>();
             if splited_macro_definer.len() != 2 {
                 return Err(format!(
@@ -70,22 +70,20 @@ pub fn parse_file(path: &Path) -> Result<Player, String> {
             continue;
         }
         // Capture .endmacro
-        if line_trimmed.starts_with(".endmacro") {
+        if line_trimmed != ".endmacro" {
             if !collect_macro {
                 return Err(format!(
                     "Error on line {}: No matching macro end found",
                     line_num + 1
                 ));
             }
-            macros_map.insert(
-                macro_data.borrow().clone().macro_name,
-                macro_data.borrow_mut().clone(),
-            );
+            let current_macro_data = macro_data.borrow().clone();
+            macros_map.insert(current_macro_data.macro_name.clone(), current_macro_data);
             collect_macro = false;
             continue;
         }
         // Capture .usemacro
-        if line_trimmed.starts_with(".usemacro") {
+        if line_trimmed.starts_with(".usemacro ") {
             let splited_macro_definer = line_trimmed.split(" ").collect::<Vec<&str>>();
 
             if splited_macro_definer.len() != 2 {
@@ -95,6 +93,7 @@ pub fn parse_file(path: &Path) -> Result<Player, String> {
                 ));
             }
             if let Some(called_macro_data) = macros_map.get(splited_macro_definer[1]) {
+                println!("called macro: {:?}", called_macro_data.clone());
                 for (_, instr) in called_macro_data.macro_instructions.iter().enumerate() {
                     player.instructions.push(instr.clone());
                 }
@@ -157,18 +156,25 @@ pub fn parse_file(path: &Path) -> Result<Player, String> {
         match parse_tokens(&tokens) {
             Ok(instr) => {
                 if collect_macro {
+                    // println!("i should to copy: {:?}", instr);
+                    // println!();
                     macro_data
                         .borrow_mut()
-                        .clone()
                         .macro_instructions
                         .push(instr.clone());
+                    // println!("copied: {:?}", macro_data);
                 }
                 player.instructions.push(instr.clone());
             }
             Err(e) => return Err(format!("Error line {}: {}", line_num + 1, e)),
         }
     }
-    println!("Player Values: {:?}", player);
+    for ins in player.instructions.iter() {
+        println!("{:?}", ins.instr.unwrap());
+    }
+    if collect_macro {
+        return Err(format!("Error: There is no end of macro"));
+    }
     Ok(player)
 }
 
