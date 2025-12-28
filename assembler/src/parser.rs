@@ -6,6 +6,8 @@ use std::{
     path::Path,
 };
 
+use crate::arithmetic;
+
 use super::{
     instruction::{InstructionInstance, Param, ValueType},
     lexer::{Token, tokenize},
@@ -51,6 +53,7 @@ pub fn parse_file(path: &Path) -> Result<Player, String> {
     for (line_num, line) in reader.lines().enumerate() {
         let line = line.map_err(|e| format!("error reading for the buffer: {e}"))?;
         let line_trimmed = line.trim();
+        arithmetic::extract_number_operations(&line.as_str());
         if line_trimmed.is_empty() || line_trimmed.starts_with(';') || line_trimmed.starts_with("#")
         {
             continue;
@@ -70,7 +73,7 @@ pub fn parse_file(path: &Path) -> Result<Player, String> {
             continue;
         }
         // Capture .endmacro
-        if line_trimmed != ".endmacro" {
+        if line_trimmed == ".endmacro" {
             if !collect_macro {
                 return Err(format!(
                     "Error on line {}: No matching macro end found",
@@ -168,9 +171,6 @@ pub fn parse_file(path: &Path) -> Result<Player, String> {
             }
             Err(e) => return Err(format!("Error line {}: {}", line_num + 1, e)),
         }
-    }
-    for ins in player.instructions.iter() {
-        println!("{:?}", ins.instr.unwrap());
     }
     if collect_macro {
         return Err(format!("Error: There is no end of macro"));
